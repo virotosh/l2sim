@@ -18,10 +18,19 @@ Create a random sim
 
 Change sim to walk mode
 - select sim 
-- //simwalk
+- //sidewalk
+
+
+https://github.com/user-attachments/assets/a9003216-d5cc-412a-9d58-039b1c12ea55
+
+
 
 Change sim to farm mode
 - select sim
 - //simfarm
+
+
+
+https://github.com/user-attachments/assets/7df32dfa-a100-4d53-a645-37cd98b3b77e
 
 
