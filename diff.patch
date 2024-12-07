@@ -1,0 +1,296 @@
+diff --git a/aCis_datapack/data/html/admin/simplayers/index.htm b/aCis_datapack/data/html/admin/simplayers/index.htm
+new file mode 100644
+index 0000000..4b591a6
+--- /dev/null
++++ b/aCis_datapack/data/html/admin/simplayers/index.htm
+@@ -0,0 +1,17 @@
++<html><body>
++<table width=260>
++<tr>
++<td width=40></td>	
++<td width=180><center>Sim Players Dashboard</center></td>
++<td width=40></td>
++</tr>
++<tr>
++<td width=180><center>Sim count: <font color="LEVEL">%simcount%</font></center></td>
++</tr>
++</table><br>
++<center>
++<table width=230>
++<tr><td><a action="bypass admin_spawnrandom htm"><font color="LEVEL">Spawn Sim</font></a></td></tr>
++</table>
++</center>
++</body></html>
+\ No newline at end of file
+diff --git a/aCis_datapack/data/xml/adminCommands.xml b/aCis_datapack/data/xml/adminCommands.xml
+index 0021f33..b4e682e 100644
+--- a/aCis_datapack/data/xml/adminCommands.xml
++++ b/aCis_datapack/data/xml/adminCommands.xml
+@@ -158,4 +158,12 @@
+ 
+ 	<!-- ZONE -->
+ 	<aCar name="admin_zone" accessLevel="7" params="[show - all|clear|id]" desc="Show the zone panel, or the zone visually."/>
++	
++	<!-- SIMPLAYER -->
++	<aCar name="admin_sims" accessLevel="7"/>
++	<aCar name="admin_spawnrandom" accessLevel="7"/>
++	<aCar name="admin_simdelete" accessLevel="7"/>
++	<aCar name="admin_simwalk" accessLevel="7"/>
++	<aCar name="admin_simfarm" accessLevel="7"/>
++	
+ </list>
+\ No newline at end of file
+diff --git a/aCis_datapack/data/xml/simPlayerAIs.xml b/aCis_datapack/data/xml/simPlayerAIs.xml
+new file mode 100644
+index 0000000..aad2886
+--- /dev/null
++++ b/aCis_datapack/data/xml/simPlayerAIs.xml
+@@ -0,0 +1,12 @@
++<?xml version='1.0' encoding='utf-8'?>
++<list>
++	<class classId="93" isMagicClass="false"> <!-- Adventurer -->
++		<skill skillId="12" priority="1"/>
++		<skill skillId="11" priority="2"/>
++		<skill skillId="4" priority="3"/>
++		<skill skillId="263" priority="4"/>
++		<skill skillId="409" priority="5"/>
++		<skill skillId="344" priority="6"/>
++		<skill skillId="358" priority="7"/>
++	</class>
++</list>
+\ No newline at end of file
+diff --git a/aCis_gameserver/java/net/sf/l2j/gameserver/GameServer.java b/aCis_gameserver/java/net/sf/l2j/gameserver/GameServer.java
+index bf24b43..b47bef2 100644
+--- a/aCis_gameserver/java/net/sf/l2j/gameserver/GameServer.java
++++ b/aCis_gameserver/java/net/sf/l2j/gameserver/GameServer.java
+@@ -97,6 +97,10 @@
+ import net.sf.l2j.gameserver.taskmanager.ShadowItemTaskManager;
+ import net.sf.l2j.gameserver.taskmanager.WaterTaskManager;
+ 
++import free.l2j.simfactory.data.xml.SimPlayerAIData;
++import free.l2j.simfactory.model.actor.SimPlayerNameManager;
++import free.l2j.simfactory.taskmanager.SimPlayerTaskManager;
++
+ public class GameServer
+ {
+ 	private static final CLogger LOGGER = new CLogger(GameServer.class.getName());
+@@ -252,6 +256,11 @@
+ 		DerbyTrackManager.getInstance();
+ 		LotteryManager.getInstance();
+ 		CoupleManager.getInstance();
++
++		StringUtil.printSection("Sim Player Managers");
++		SimPlayerNameManager.getInstance();
++		SimPlayerTaskManager.getInstance();
++		SimPlayerAIData.getInstance();
+ 		
+ 		if (Config.ALLOW_FISH_CHAMPIONSHIP)
+ 			FishingChampionshipManager.getInstance();
+diff --git a/aCis_gameserver/java/net/sf/l2j/gameserver/handler/admincommandhandlers/AdminSimPlayers.java b/aCis_gameserver/java/net/sf/l2j/gameserver/handler/admincommandhandlers/AdminSimPlayers.java
+new file mode 100644
+index 0000000..3794d45
+--- /dev/null
++++ b/aCis_gameserver/java/net/sf/l2j/gameserver/handler/admincommandhandlers/AdminSimPlayers.java
+@@ -0,0 +1,81 @@
++package net.sf.l2j.gameserver.handler.admincommandhandlers;
++
++import net.sf.l2j.gameserver.handler.IAdminCommandHandler;
++import net.sf.l2j.gameserver.model.actor.Player;
++import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
++
++import free.l2j.simfactory.model.actor.SimPlayer;
++import free.l2j.simfactory.taskmanager.SimPlayerTaskManager;
++
++public class AdminSimPlayers implements IAdminCommandHandler
++{
++	private final String simsFolder = "data/html/admin/simplayers/";
++	private static final String[] ADMIN_COMMANDS =
++	{
++		"admin_sims",
++		"admin_spawnrandom",
++		"admin_simdelete",
++		"admin_simwalk",
++		"admin_simfarm",
++	};
++	
++	@Override
++	public String[] getAdminCommandList()
++	{
++		return ADMIN_COMMANDS;
++	}
++	
++	private void showSimDashboard(Player activePlayer) {
++		final NpcHtmlMessage html = new NpcHtmlMessage(0);
++		html.setFile(simsFolder + "index.htm");
++		html.replace("%simcount%", SimPlayerTaskManager.getInstance().getSimPlayersCount());
++		activePlayer.sendPacket(html);
++	}
++	
++	@Override
++	public void useAdminCommand(String command, Player activePlayer)
++	{
++		if (command.startsWith("admin_sims"))
++		{
++			showSimDashboard(activePlayer);
++		}
++		
++		if (command.startsWith("admin_spawnrandom")) {
++			SimPlayer simPlayer = SimPlayerTaskManager.getInstance().spawnRandomSimPlayer(activePlayer.getX(),activePlayer.getY(),activePlayer.getZ());
++			//simPlayer.setWalkOrFarm("walk");
++			if(command.contains(" ")) {
++				String arg = command.split(" ")[1];
++				if(arg.equalsIgnoreCase("htm")) {
++					showSimDashboard(activePlayer);
++				}
++			}
++			return;
++		}	
++		
++		if(command.startsWith("admin_simdelete")) {
++			if(activePlayer.getTarget() != null && activePlayer.getTarget() instanceof SimPlayer) {
++				SimPlayer simPlayer = (SimPlayer)activePlayer.getTarget();
++				simPlayer.despawn();
++			}
++			return;
++		}
++		
++		if(command.startsWith("admin_simfarm")) {
++			if(activePlayer.getTarget() != null && activePlayer.getTarget() instanceof SimPlayer) {
++				SimPlayer simPlayer = (SimPlayer)activePlayer.getTarget();
++				simPlayer.setWalkOrFarm("farm");
++			}
++			return;
++		}
++		
++		if(command.startsWith("admin_simwalk")) {
++			if(activePlayer.getTarget() != null && activePlayer.getTarget() instanceof SimPlayer) {
++				SimPlayer simPlayer = (SimPlayer)activePlayer.getTarget();
++				simPlayer.setWalkOrFarm("walk");
++			}
++			return;
++		}
++		
++		return;
++	}
++}
+\ No newline at end of file
+diff --git a/aCis_gameserver/java/net/sf/l2j/gameserver/handler/chathandlers/ChatTell.java b/aCis_gameserver/java/net/sf/l2j/gameserver/handler/chathandlers/ChatTell.java
+index 3dd3f2c..71d139d 100644
+--- a/aCis_gameserver/java/net/sf/l2j/gameserver/handler/chathandlers/ChatTell.java
++++ b/aCis_gameserver/java/net/sf/l2j/gameserver/handler/chathandlers/ChatTell.java
+@@ -9,6 +9,8 @@
+ import net.sf.l2j.gameserver.network.serverpackets.CreatureSay;
+ import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
+ 
++import free.l2j.simfactory.model.actor.SimPlayer;
++
+ public class ChatTell implements IChatHandler
+ {
+ 	private static final SayType[] COMMAND_IDS =
+@@ -23,7 +25,8 @@
+ 			return;
+ 		
+ 		final Player targetPlayer = World.getInstance().getPlayer(target);
+-		if (targetPlayer == null || targetPlayer.getClient().isDetached())
++		//if (targetPlayer == null || targetPlayer.getClient().isDetached())
++		if (targetPlayer == null || targetPlayer.getClient().isDetached() && !(targetPlayer instanceof SimPlayer))
+ 		{
+ 			player.sendPacket(SystemMessageId.TARGET_IS_NOT_FOUND_IN_THE_GAME);
+ 			return;
+diff --git a/aCis_gameserver/java/net/sf/l2j/gameserver/model/actor/Creature.java b/aCis_gameserver/java/net/sf/l2j/gameserver/model/actor/Creature.java
+index b88f890..dbabb6e 100644
+--- a/aCis_gameserver/java/net/sf/l2j/gameserver/model/actor/Creature.java
++++ b/aCis_gameserver/java/net/sf/l2j/gameserver/model/actor/Creature.java
+@@ -79,6 +79,8 @@
+ import net.sf.l2j.gameserver.taskmanager.AttackStanceTaskManager;
+ import net.sf.l2j.gameserver.taskmanager.DecayTaskManager;
+ 
++import free.l2j.simfactory.model.actor.SimPlayer;
++
+ /**
+  * An instance type extending {@link WorldObject} which represents the mother class of all character objects of the world such as players, NPCs and monsters.
+  */
+@@ -418,7 +420,7 @@
+ 		getPosition().set(x, y, z);
+ 		
+ 		// Handle onTeleported behavior, but only if it's not a Player. Players are handled from Appearing packet.
+-		if (!(this instanceof Player player) || (player.getClient() != null && player.getClient().isDetached()))
++		if (!(this instanceof Player player) || (player.getClient() != null && player.getClient().isDetached()) || this instanceof SimPlayer)
+ 			onTeleported();
+ 		
+ 		getAI().notifyEvent(AiEventType.TELEPORTED, null, null);
+diff --git a/aCis_gameserver/java/net/sf/l2j/gameserver/model/actor/Player.java b/aCis_gameserver/java/net/sf/l2j/gameserver/model/actor/Player.java
+index f5a1be5..027eb49 100644
+--- a/aCis_gameserver/java/net/sf/l2j/gameserver/model/actor/Player.java
++++ b/aCis_gameserver/java/net/sf/l2j/gameserver/model/actor/Player.java
+@@ -224,7 +224,7 @@
+  * This class represents a player in the world.<br>
+  * There is always a client-thread connected to this (except if a player-store is activated upon logout).
+  */
+-public final class Player extends Playable
++public class Player extends Playable
+ {
+ 	private static final String RESTORE_SKILLS_FOR_CHAR = "SELECT skill_id,skill_level FROM character_skills WHERE char_obj_id=? AND class_index=?";
+ 	private static final String ADD_OR_UPDATE_SKILL = "INSERT INTO character_skills (char_obj_id,skill_id,skill_level,class_index) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE skill_level=VALUES(skill_level)";
+@@ -473,7 +473,7 @@
+ 	 * @param accountName The name of the account including this Player
+ 	 * @param app The PcAppearance of the Player
+ 	 */
+-	private Player(int objectId, PlayerTemplate template, String accountName, Appearance app)
++	protected Player(int objectId, PlayerTemplate template, String accountName, Appearance app)
+ 	{
+ 		super(objectId, template);
+ 		
+diff --git a/aCis_gameserver/java/net/sf/l2j/gameserver/network/GameClient.java b/aCis_gameserver/java/net/sf/l2j/gameserver/network/GameClient.java
+index 1cfdec8..90d5004 100644
+--- a/aCis_gameserver/java/net/sf/l2j/gameserver/network/GameClient.java
++++ b/aCis_gameserver/java/net/sf/l2j/gameserver/network/GameClient.java
+@@ -35,7 +35,7 @@
+  * <br>
+  * It is linked to a {@link Player} and hold account informations (flood protectors, connection time, etc).
+  */
+-public final class GameClient extends MMOClient<MMOConnection<GameClient>> implements Runnable
++public class GameClient extends MMOClient<MMOConnection<GameClient>> implements Runnable
+ {
+ 	private static final CLogger LOGGER = new CLogger(GameClient.class.getName());
+ 	
+diff --git a/aCis_gameserver/java/net/sf/l2j/gameserver/network/clientpackets/MoveBackwardToLocation.java b/aCis_gameserver/java/net/sf/l2j/gameserver/network/clientpackets/MoveBackwardToLocation.java
+index a8054cd..144f8b8 100644
+--- a/aCis_gameserver/java/net/sf/l2j/gameserver/network/clientpackets/MoveBackwardToLocation.java
++++ b/aCis_gameserver/java/net/sf/l2j/gameserver/network/clientpackets/MoveBackwardToLocation.java
+@@ -18,6 +18,8 @@
+ import net.sf.l2j.gameserver.network.serverpackets.MoveToLocation;
+ import net.sf.l2j.gameserver.network.serverpackets.MoveToLocationInVehicle;
+ 
++import free.l2j.simfactory.model.actor.SimPlayer;
++
+ public class MoveBackwardToLocation extends L2GameClientPacket
+ {
+ 	private static final Point2D CENTER_BOAT = new Point2D(0, -100);
+diff --git a/aCis_gameserver/java/net/sf/l2j/gameserver/network/clientpackets/RequestJoinParty.java b/aCis_gameserver/java/net/sf/l2j/gameserver/network/clientpackets/RequestJoinParty.java
+index 1589962..96630b5 100644
+--- a/aCis_gameserver/java/net/sf/l2j/gameserver/network/clientpackets/RequestJoinParty.java
++++ b/aCis_gameserver/java/net/sf/l2j/gameserver/network/clientpackets/RequestJoinParty.java
+@@ -9,6 +9,8 @@
+ import net.sf.l2j.gameserver.network.serverpackets.AskJoinParty;
+ import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
+ 
++import free.l2j.simfactory.model.actor.SimPlayer;
++
+ public final class RequestJoinParty extends L2GameClientPacket
+ {
+ 	private String _targetName;
+@@ -115,6 +117,12 @@
+ 		requestor.onTransactionRequest(target);
+ 		requestor.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.YOU_INVITED_S1_TO_PARTY).addCharName(target));
+ 		
++		// SimPlayer party join
++		if (target instanceof SimPlayer ) {
++			((SimPlayer)target).simPlayerJoinParty(requestor);
++			return;
++		}
++			
+ 		target.sendPacket(new AskJoinParty(requestor.getName(), (party != null) ? party.getLootRule().ordinal() : _lootRuleId));
+ 	}
+ }
+\ No newline at end of file
