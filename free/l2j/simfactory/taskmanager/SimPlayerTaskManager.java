@@ -2,6 +2,7 @@ package free.l2j.simfactory.taskmanager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import net.sf.l2j.commons.logging.CLogger;
 import net.sf.l2j.commons.pool.ThreadPool;
@@ -96,6 +97,7 @@ public class SimPlayerTaskManager implements Runnable
 		Player player = World.getInstance().getPlayer(objectId);
 		if (player instanceof SimPlayer) {
 			SimPlayer simPlayer = (SimPlayer) player;
+			_simPlayers.remove(_simPlayers.indexOf(simPlayer));
 			simPlayer.despawn();
 		}
 	}
@@ -106,9 +108,9 @@ public class SimPlayerTaskManager implements Runnable
 	}
 
 	public List<SimPlayer> getSimPlayers() {
-		return _simPlayers;
-		//return World.getInstance().getPlayers().stream().filter(x -> x instanceof SimPlayer).map(x -> (SimPlayer) x)
-		//		.collect(Collectors.toList());
+		//return _simPlayers;
+		return World.getInstance().getPlayers().stream().filter(x -> x instanceof SimPlayer).map(x -> (SimPlayer) x)
+				.collect(Collectors.toList());
 	}
 	
 	public static final SimPlayerTaskManager getInstance()
