@@ -38,6 +38,7 @@ import net.sf.l2j.gameserver.skills.L2Skill;
 import free.l2j.simfactory.commons.SimPlayerHelper;
 import free.l2j.simfactory.model.actor.ai.attribute.SimPlayerAISkill;
 import free.l2j.simfactory.model.actor.ai.preference.OffensiveSkill;
+import free.l2j.simfactory.model.actor.ai.preference.TeleportModule;
 import free.l2j.simfactory.model.actor.ai.preference.WalkNode;
 
 
@@ -57,7 +58,6 @@ public class SimPlayer extends Player
 	public SimPlayer(int objectId, PlayerTemplate template, String accountName, Appearance app)
 	{
 		super(objectId, template, accountName, app);
-		setWalkNodes();
 	}
 	
 	public void onUpdate()
@@ -67,10 +67,12 @@ public class SimPlayer extends Player
 		setBusy(true);
 		onDeath();
 		applyBuffs();
+		//LOGGER.info(TeleportModule.getCity(this,false,false));
 		
 		switch(_walkOrFarm)
 		{
 			case "walk":
+				TeleportModule.MoveInCity(this);
 				walk();
 				break;
 			case "farm":
@@ -91,7 +93,7 @@ public class SimPlayer extends Player
 	}
 	
 	public void walk() {
-		if(_walkNodes.isEmpty())
+		if(_walkNodes.isEmpty()) 
 			return;
 		
 		if(_isWalking) {
@@ -109,7 +111,7 @@ public class SimPlayer extends Player
 		
 		if(!_isWalking && _currentWalkNode == null) {
 			_currentWalkNode = getWalkNodes().poll();
-			_walkNodes.add(_currentWalkNode);
+			//_walkNodes.add(_currentWalkNode);
 			this.getAI().tryToMoveTo(new Location(_currentWalkNode.getX(), _currentWalkNode.getY(), _currentWalkNode.getZ()), null);
 			_isWalking = true;
 		}
@@ -117,28 +119,19 @@ public class SimPlayer extends Player
 	
 	protected boolean userReachedDestination(WalkNode targetWalkNode) {
 		if(this.getX() == targetWalkNode.getX()
-			&& this.getY() == targetWalkNode.getY() 
-			&& this.getZ() == targetWalkNode.getZ())
+			&& this.getY() == targetWalkNode.getY()) 
+			//&& this.getZ() == targetWalkNode.getZ())
 			return true;
 		
 		return false;
 	}
 	
-	protected void setWalkNodes() {
-		_walkNodes.add(new WalkNode(82248, 148600, -3464, Rnd.get(1, 20)));
-		_walkNodes.add(new WalkNode(82072, 147560, -3464, Rnd.get(1, 20)));
-		_walkNodes.add(new WalkNode(82792, 147832, -3464, Rnd.get(1, 20)));
-		_walkNodes.add(new WalkNode(83320, 147976, -3400, Rnd.get(1, 20)));
-		_walkNodes.add(new WalkNode(84584, 148536, -3400, Rnd.get(1, 20)));
-		_walkNodes.add(new WalkNode(83384, 149256, -3400, Rnd.get(1, 20)));		
-		_walkNodes.add(new WalkNode(83064, 148392, -3464, Rnd.get(1, 20)));
-		_walkNodes.add(new WalkNode(87016, 148632, -3400, Rnd.get(1, 20)));
-		_walkNodes.add(new WalkNode(85816, 148872, -3400, Rnd.get(1, 20)));
-		_walkNodes.add(new WalkNode(85832, 153208, -3496, Rnd.get(1, 20)));
-		_walkNodes.add(new WalkNode(81384, 150040, -3528, Rnd.get(1, 20)));
-		_walkNodes.add(new WalkNode(79656, 150728, -3512, Rnd.get(1, 20)));
-		_walkNodes.add(new WalkNode(79272, 149544, -3528, Rnd.get(1, 20)));
-		_walkNodes.add(new WalkNode(80744, 146424, -3528, Rnd.get(1, 20)));
+	public Queue<WalkNode> getWalkNodes(){
+		return _walkNodes;
+	}
+	
+	protected void addWalkNode(WalkNode walkNode) {
+		_walkNodes.add(walkNode);
 	}
 	
 	public void setBusy(boolean isbusy) {
@@ -157,15 +150,6 @@ public class SimPlayer extends Player
 		return _isMagicClass;
 	}
 	
-	public Queue<WalkNode> getWalkNodes(){
-		return _walkNodes;
-	}
-	
-	protected void addWalkNode(WalkNode walkNode) {
-		_walkNodes.add(walkNode);
-	}
-	
-
 	protected void targetRandom()
 	{
 		if(this.getTarget() == null) {
