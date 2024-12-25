@@ -4,10 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import net.sf.l2j.commons.logging.CLogger;
-import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.Npc;
+import net.sf.l2j.gameserver.network.SystemMessageId;
 
 import free.l2j.simfactory.model.actor.SimPlayer;
 
@@ -29,7 +29,7 @@ public class TeleportModule {
         }
     }
 
-    public static final int SCROLL_OF_SCAPE = 736;
+    public static final int SCROLL_OF_ESCAPE = 736;
     public static final int ROXXY = 30006;
 
     public static final TCity[] TCities = {
@@ -140,19 +140,32 @@ public class TeleportModule {
         return city;
     }
 
+    public static void goHome(SimPlayer player, int itemID, int skillID, boolean move) {
+    	player.getAI().tryToCast(player, 2099, 1);
+    	//player.getAI().tryToUseItem(736);
+    }
+
     public static void addWalkNode(SimPlayer player, int x, int y, int z) {
         player.getWalkNodes().add(new WalkNode(x, y, z));
     }
 
     public static void MoveInCity(SimPlayer player) {
         TCity city = getCity(player, false, false);
+        
+        if (city == TCity.NON_CITY) {
+        	goHome(player,-1,-1,false);
+        	return;
+        }
+        
         Npc GK = World.getInstance().getNpc(GateKeepers[city.getValue()]);
         
         if (Functions.distanceBetween(player.getPosition(), GK.getPosition()) < 250)
         	return;
         
-        if (!player.getWalkNodes().isEmpty())
+        if (!player.getWalkNodes().isEmpty()) {
+        	player.walk();
             return;
+        }
 
         if (city == TCity.GIRAN) {
             if (Functions.inRange(player, 81376, 148095, -3464, 250)) {
@@ -1175,14 +1188,10 @@ public class TeleportModule {
             //if (Functions.inRange(player,12094, 16709, -4580, 500)  then Moved := true;
         }
         
-        if (city == TCity.NON_CITY) {
-        	// goHome
-        }
-        else {
-	        // last node next to Gatekeeper
-	        addWalkNode(player, GK.getX()+Rnd.get(-10, 10), GK.getY()+Rnd.get(-10, 10), GK.getZ());
-	        // start walk
-	        player.walk();
-        }
+        // last node next to Gatekeeper
+        //addWalkNode(player, GK.getX()+Rnd.get(-10, 10), GK.getY()+Rnd.get(-10, 10), GK.getZ());
+        // start walk
+    	//LOGGER.info(player.getWalkNodes().size());
     }
+    
 }
