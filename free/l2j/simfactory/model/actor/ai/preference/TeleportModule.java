@@ -142,7 +142,7 @@ public class TeleportModule {
 
     public static void goHome(SimPlayer player, int itemID, int skillID, boolean move) {
     	player.getAI().tryToCast(player, 2099, 1);
-    	//player.getAI().tryToUseItem(736);
+    	//player.getAI().tryToUseItem(SCROLL_OF_ESCAPE);
     }
 
     public static void addWalkNode(SimPlayer player, int x, int y, int z) {
