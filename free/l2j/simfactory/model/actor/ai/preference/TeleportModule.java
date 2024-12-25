@@ -3,9 +3,16 @@ package free.l2j.simfactory.model.actor.ai.preference;
 import java.util.Arrays;
 import java.util.List;
 
+import net.sf.l2j.commons.logging.CLogger;
+import net.sf.l2j.commons.random.Rnd;
+
+import net.sf.l2j.gameserver.model.World;
+import net.sf.l2j.gameserver.model.actor.Npc;
+
 import free.l2j.simfactory.model.actor.SimPlayer;
 
 public class TeleportModule {
+	private static final CLogger LOGGER = new CLogger(TeleportModule.class.getName());
     public enum TCity {
         DWARVEN(0), ORC(1), DARK_ELVEN(2), ELVEN(3), TALKING_ISLAND(4),
             HEINE(5), DION(6), GIRAN(7), ADEN(8), GODDARD(9), GLUDIO(10), GLUDIN(11),
@@ -139,6 +146,11 @@ public class TeleportModule {
 
     public static void MoveInCity(SimPlayer player) {
         TCity city = getCity(player, false, false);
+        Npc GK = World.getInstance().getNpc(GateKeepers[city.getValue()]);
+        
+        if (Functions.distanceBetween(player.getPosition(), GK.getPosition()) < 250)
+        	return;
+        
         if (!player.getWalkNodes().isEmpty())
             return;
 
@@ -1162,5 +1174,8 @@ public class TeleportModule {
             }
             //if (Functions.inRange(player,12094, 16709, -4580, 500)  then Moved := true;
         }
+        
+        // last node next to Gatekeeper
+        addWalkNode(player, GK.getX()+Rnd.get(-10, 10), GK.getY()+Rnd.get(-10, 10), GK.getZ());
     }
 }

@@ -53,7 +53,6 @@ public class SimPlayer extends Player
 	protected boolean _isWalking = false;
 	protected Queue<WalkNode> _walkNodes = new LinkedList<>();
 	private WalkNode _currentWalkNode;
-	private int currentStayIterations = 0;
 	
 	public SimPlayer(int objectId, PlayerTemplate template, String accountName, Appearance app)
 	{
@@ -96,7 +95,7 @@ public class SimPlayer extends Player
 			return;
 		
 		if(_isWalking) {
-			if(userReachedDestination(_currentWalkNode)) {
+			if(userReachedDestination(_currentWalkNode)) {	
 				_currentWalkNode = null;
 				_isWalking = false;
 			}			

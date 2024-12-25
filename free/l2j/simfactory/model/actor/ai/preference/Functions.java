@@ -1,8 +1,14 @@
 package free.l2j.simfactory.model.actor.ai.preference;
 
+import net.sf.l2j.gameserver.model.location.Location;
+
 import free.l2j.simfactory.model.actor.SimPlayer;
 
 public class Functions {
+	public static double distanceBetween(Location a1, Location a2) {
+        return Math.sqrt(Math.pow((a2.getX() - a1.getX()), 2) + Math.pow((a2.getY() - a1.getY()), 2) + Math.pow((a2.getZ() - a1.getZ()), 2));
+    }
+	
 	public static double distanceBetween(long x1, long y1, long z1, long x2, long y2, long z2) {
         return Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2) + Math.pow((z2 - z1), 2));
     }
