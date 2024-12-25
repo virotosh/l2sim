@@ -156,18 +156,22 @@ public class TeleportModule {
         
         if (city.equals(TCity.NON_CITY))
         	return;
-        
+
         Npc GK = World.getInstance().getNpc(GateKeepers[city.getValue()]);
+
+        if (Functions.distanceBetween(player.getPosition(), GK.getPosition()) < 250)
+        	return;
         
         if (!player.getWalkNodes().isEmpty()) {
-        	player.walk();
-            return;
+        	player.walk(); 
+        	return;
         }
         
-        
-        final List<Location> path = GeoEngine.getInstance().findPath(player.getX(), player.getY(), player.getZ(), GK.getX(), GK.getY(), GK.getZ(), true, null);
-		if (path.isEmpty())
+        List<Location> path = GeoEngine.getInstance().findPath(player.getX(), player.getY(), player.getZ(), GK.getX(), GK.getY(), GK.getZ(), true, null);
+		if (path.isEmpty()) {
+			goHome(player, -1, -1, false);
 			return;
+		}
 		
 		for (Location loc : path)
 			addWalkNode(player, loc.getX(), loc.getY(), loc.getZ());
