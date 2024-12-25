@@ -88,7 +88,6 @@ public class SimPlayer extends Player
 	public void setWalkOrFarm(String _type) {
 		_walkOrFarm = _type;
 		_currentWalkNode = null;
-		currentStayIterations = 0;
 		_isWalking = false;
 	}
 	
@@ -98,13 +97,7 @@ public class SimPlayer extends Player
 		
 		if(_isWalking) {
 			if(userReachedDestination(_currentWalkNode)) {
-				if(currentStayIterations < _currentWalkNode.getStayIterations() ) {
-					currentStayIterations++;
-					setBusy(false);
-					return;
-				}				
 				_currentWalkNode = null;
-				currentStayIterations = 0;
 				_isWalking = false;
 			}			
 		}

@@ -3,8 +3,6 @@ package free.l2j.simfactory.model.actor.ai.preference;
 import java.util.Arrays;
 import java.util.List;
 
-import net.sf.l2j.commons.random.Rnd;
-
 import free.l2j.simfactory.model.actor.SimPlayer;
 
 public class TeleportModule {
