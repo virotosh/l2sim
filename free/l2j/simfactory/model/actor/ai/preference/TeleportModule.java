@@ -1175,7 +1175,14 @@ public class TeleportModule {
             //if (Functions.inRange(player,12094, 16709, -4580, 500)  then Moved := true;
         }
         
-        // last node next to Gatekeeper
-        addWalkNode(player, GK.getX()+Rnd.get(-10, 10), GK.getY()+Rnd.get(-10, 10), GK.getZ());
+        if (city == TCity.NON_CITY) {
+        	// goHome
+        }
+        else {
+	        // last node next to Gatekeeper
+	        addWalkNode(player, GK.getX()+Rnd.get(-10, 10), GK.getY()+Rnd.get(-10, 10), GK.getZ());
+	        // start walk
+	        player.walk();
+        }
     }
 }

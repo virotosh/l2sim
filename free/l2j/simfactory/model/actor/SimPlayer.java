@@ -72,7 +72,6 @@ public class SimPlayer extends Player
 		{
 			case "walk":
 				TeleportModule.MoveInCity(this);
-				walk();
 				break;
 			case "farm":
 				handleShots();
@@ -112,6 +111,7 @@ public class SimPlayer extends Player
 	protected boolean userReachedDestination(WalkNode targetWalkNode) {
 		if(this.getX() == targetWalkNode.getX()
 			&& this.getY() == targetWalkNode.getY()) 
+			// check for Z
 			//&& this.getZ() == targetWalkNode.getZ())
 			return true;
 		
