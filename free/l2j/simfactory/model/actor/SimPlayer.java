@@ -71,7 +71,9 @@ public class SimPlayer extends Player
 		switch(_walkOrFarm)
 		{
 			case "walk":
+				//LOGGER.info(_walkNodes.size());
 				TeleportModule.MoveInCity(this);
+				TeleportModule.TeleportTo(this, "Hardin's Private Academy");
 				break;
 			case "farm":
 				handleShots();
@@ -90,6 +92,7 @@ public class SimPlayer extends Player
 	}
 	
 	public void walk() {
+		//LOGGER.info(_walkNodes.size());
 		if(_walkNodes.isEmpty()) 
 			return;
 		
@@ -108,11 +111,16 @@ public class SimPlayer extends Player
 		}
 	}
 	
+	public void resetWalk() {
+		_currentWalkNode = null;
+		_isWalking = false;
+		getWalkNodes().clear();	
+	}
+	
 	protected boolean userReachedDestination(WalkNode targetWalkNode) {
 		if(this.getX() == targetWalkNode.getX()
-			&& this.getY() == targetWalkNode.getY()) 
-			// check for Z
-			//&& this.getZ() == targetWalkNode.getZ())
+			&& this.getY() == targetWalkNode.getY()
+			&& this.getZ() == targetWalkNode.getZ())
 			return true;
 		
 		return false;

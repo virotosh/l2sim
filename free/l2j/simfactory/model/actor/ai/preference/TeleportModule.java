@@ -6,10 +6,12 @@ import java.util.List;
 import net.sf.l2j.commons.logging.CLogger;
 import net.sf.l2j.commons.random.Rnd;
 
+import net.sf.l2j.gameserver.data.xml.TeleportData;
 import net.sf.l2j.gameserver.geoengine.GeoEngine;
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.Npc;
 import net.sf.l2j.gameserver.model.location.Location;
+import net.sf.l2j.gameserver.model.location.TeleportLocation;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 
 import free.l2j.simfactory.model.actor.SimPlayer;
@@ -143,7 +145,8 @@ public class TeleportModule {
     }
 
     public static void goHome(SimPlayer player, int itemID, int skillID, boolean move) {
-    	player.getAI().tryToCast(player, 1050, 2);
+    	player.resetWalk();
+    	player.getAI().tryToCast(player, 2100, 1);
     	//player.getAI().tryToUseItem(SCROLL_OF_ESCAPE);
     }
 
@@ -153,19 +156,19 @@ public class TeleportModule {
 
     public static void MoveInCity(SimPlayer player) {
         TCity city = getCity(player, false, false);
-        
         if (city.equals(TCity.NON_CITY))
         	return;
 
-        Npc GK = World.getInstance().getNpc(GateKeepers[city.getValue()]);
-
-        if (Functions.distanceBetween(player.getPosition(), GK.getPosition()) < 250)
-        	return;
-        
         if (!player.getWalkNodes().isEmpty()) {
         	player.walk(); 
         	return;
         }
+        
+
+        Npc GK = World.getInstance().getNpc(GateKeepers[city.getValue()]);
+
+        if (Functions.distanceBetween(player.getPosition(), GK.getPosition()) < 100)
+        	return;
         
         List<Location> path = GeoEngine.getInstance().findPath(player.getX(), player.getY(), player.getZ(), GK.getX(), GK.getY(), GK.getZ(), true, null);
 		if (path.isEmpty()) {
@@ -176,6 +179,37 @@ public class TeleportModule {
 		for (Location loc : path)
 			addWalkNode(player, loc.getX(), loc.getY(), loc.getZ());
     	
+    }
+    
+    public static void TeleportTo(SimPlayer player, String loc) {
+    	TCity city = getCity(player, false, false);
+        
+        if (city.equals(TCity.NON_CITY))
+        	return;
+        
+        Npc GK = World.getInstance().getNpc(GateKeepers[city.getValue()]);
+
+        if (Functions.distanceBetween(player.getPosition(), GK.getPosition()) > 100)
+        	return;
+
+        
+        if (!player.getWalkNodes().isEmpty())
+        	return;
+        
+        
+    	final List<TeleportLocation> teleports = TeleportData.getInstance().getTeleports(GK.getNpcId());
+		if (teleports == null)
+			return;
+		
+		for (int index = 0; index < teleports.size(); index++)
+		{
+			final TeleportLocation teleport = teleports.get(index);
+			if (teleport == null)
+				continue;
+			
+			if (loc.equals(teleport.getDesc()))
+				player.teleportTo(teleport.getX(), teleport.getY(), teleport.getZ(), 0);
+		}
     }
     
 }
