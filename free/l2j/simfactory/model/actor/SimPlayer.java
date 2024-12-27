@@ -337,6 +337,7 @@ public class SimPlayer extends Player
 	}
 	
 	public void simPlayerJoinParty(Player requester) {
+		//LOGGER.info(this.requ);
 		if (requester == null)
 			return;
 		

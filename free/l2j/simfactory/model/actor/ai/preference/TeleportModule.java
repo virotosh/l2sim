@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import net.sf.l2j.commons.logging.CLogger;
-import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.gameserver.data.xml.TeleportData;
 import net.sf.l2j.gameserver.geoengine.GeoEngine;
@@ -12,7 +11,6 @@ import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.Npc;
 import net.sf.l2j.gameserver.model.location.Location;
 import net.sf.l2j.gameserver.model.location.TeleportLocation;
-import net.sf.l2j.gameserver.network.SystemMessageId;
 
 import free.l2j.simfactory.model.actor.SimPlayer;
 
@@ -124,7 +122,7 @@ public class TeleportModule {
         if (Functions.inRange(player, 18591, 144708, player.getZ(), 5000)) city = TCity.DION;
         if (Functions.inRange(player, 116569, -179848, player.getZ(), 7000)) city = TCity.DWARVEN;
         if (Functions.inRange(player, 44904, 49800, player.getZ(), 7000)) city = TCity.ELVEN;
-        if (Functions.inRange(player, 82876, 148960, player.getZ(), 5000)) city = TCity.GIRAN;
+        if (Functions.inRange(player, 82876, 148960, player.getZ(), 8000)) city = TCity.GIRAN;
         if (Functions.inRange(player, -81311, 152663, player.getZ(), 5000)) city = TCity.GLUDIN;
         if (Functions.inRange(player, -14236, 123701, player.getZ(), 5000)) city = TCity.GLUDIO;
         if (Functions.inRange(player, 147713, -56202, player.getZ(), 5000)) city = TCity.GODDARD;
@@ -167,7 +165,7 @@ public class TeleportModule {
 
         Npc GK = World.getInstance().getNpc(GateKeepers[city.getValue()]);
 
-        if (Functions.distanceBetween(player.getPosition(), GK.getPosition()) < 100)
+        if (Functions.distanceBetween(player.getPosition(), GK.getPosition()) < 250)
         	return;
         
         List<Location> path = GeoEngine.getInstance().findPath(player.getX(), player.getY(), player.getZ(), GK.getX(), GK.getY(), GK.getZ(), true, null);
@@ -189,7 +187,7 @@ public class TeleportModule {
         
         Npc GK = World.getInstance().getNpc(GateKeepers[city.getValue()]);
 
-        if (Functions.distanceBetween(player.getPosition(), GK.getPosition()) > 100)
+        if (Functions.distanceBetween(player.getPosition(), GK.getPosition()) > 250)
         	return;
 
         
