@@ -56,21 +56,21 @@ public class TeleportModule {
     };
 
     public static final String[] CityNames = {
-        "dwarven village",
-        "orc village",
-        "dark elf village",
-        "elf village",
-        "talking island",
-        "heine",
-        "dion",
-        "giran",
-        "aden",
-        "goddard",
-        "gludio",
-        "gludin",
-        "schuttgart",
-        "rune",
-        "oren",
+        "Dwarven Village",
+        "Orc Village",
+        "Dark Elf Village",
+        "Elven Village",
+        "Talking Island Village",
+        "Heine",
+        "The Town of Dion",
+        "The Town of Giran",
+        "Town of Aden",
+        "Town of Goddard",
+        "The Town of Gludio",
+        "The Village of Gludin",
+        "Town of Schuttgart",
+        "Rune Township",
+        "Town of Oren",
         "hunter village"
     };
 
@@ -156,7 +156,6 @@ public class TeleportModule {
         TCity city = getCity(player, false, false);
         if (city.equals(TCity.NON_CITY))
         	return;
-
         if (!player.getWalkNodes().isEmpty()) {
         	player.walk(); 
         	return;
@@ -179,6 +178,20 @@ public class TeleportModule {
     	
     }
     
+    public static void TeleportToLocation(SimPlayer player, String loc) {
+    	TCity city = getCity(player, false, false);
+        
+        if (city.equals(TCity.NON_CITY))
+        	return;
+		TeleportGraph TGraph = new TeleportGraph();
+        
+		for (String TNode : TGraph.shortestPath(CityNames[city.getValue()], loc).getFirst()){
+			if (TNode.equals(CityNames[city.getValue()])) continue;
+			TeleportTo(player, TNode);
+			break;
+		}
+    }
+    
     public static void TeleportTo(SimPlayer player, String loc) {
     	TCity city = getCity(player, false, false);
         
@@ -194,16 +207,17 @@ public class TeleportModule {
         if (!player.getWalkNodes().isEmpty())
         	return;
         
-        
     	final List<TeleportLocation> teleports = TeleportData.getInstance().getTeleports(GK.getNpcId());
 		if (teleports == null)
 			return;
-		
+        
 		for (int index = 0; index < teleports.size(); index++)
 		{
 			final TeleportLocation teleport = teleports.get(index);
 			if (teleport == null)
 				continue;
+			
+	    	player.resetWalk();
 			
 			if (loc.equals(teleport.getDesc()))
 				player.teleportTo(teleport.getX(), teleport.getY(), teleport.getZ(), 0);

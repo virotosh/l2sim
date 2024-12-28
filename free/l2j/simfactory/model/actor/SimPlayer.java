@@ -73,7 +73,7 @@ public class SimPlayer extends Player
 			case "walk":
 				//LOGGER.info(_walkNodes.size());
 				TeleportModule.MoveInCity(this);
-				TeleportModule.TeleportTo(this, "Hardin's Private Academy");
+				TeleportModule.TeleportToLocation(this, "Fields of Massacre");
 				break;
 			case "farm":
 				handleShots();
