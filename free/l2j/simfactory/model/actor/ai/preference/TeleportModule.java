@@ -71,7 +71,7 @@ public class TeleportModule {
         "Town of Schuttgart",
         "Rune Township",
         "Town of Oren",
-        "hunter village"
+        "Hunters Village"
     };
 
     // IDs of the Gatekeepers

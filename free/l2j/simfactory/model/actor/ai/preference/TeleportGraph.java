@@ -32,7 +32,7 @@ public class TeleportGraph {
         "Town of Schuttgart",
         "Rune Township",
         "Town of Oren",
-        "hunter village"
+        "Hunters Village"
     };
 
     // IDs of the Gatekeepers
