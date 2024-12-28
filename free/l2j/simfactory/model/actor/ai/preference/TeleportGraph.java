@@ -1,6 +1,7 @@
 package free.l2j.simfactory.model.actor.ai.preference;
 
 /*
+ * Djikstra's algorithm
  * Finding the shortest path between cities in teleport graph
  * Author: Virotosh
  */
