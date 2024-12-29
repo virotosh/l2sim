@@ -40,6 +40,7 @@ import free.l2j.simfactory.model.actor.ai.attribute.SimPlayerAISkill;
 import free.l2j.simfactory.model.actor.ai.preference.OffensiveSkill;
 import free.l2j.simfactory.model.actor.ai.preference.TeleportModule;
 import free.l2j.simfactory.model.actor.ai.preference.WalkNode;
+import free.l2j.simfactory.model.actor.ai.preference.TeleportModule.TCity;
 
 
 public class SimPlayer extends Player
@@ -51,6 +52,7 @@ public class SimPlayer extends Player
 	
 	protected String _walkOrFarm = "farm";
 	protected boolean _isWalking = false;
+	protected boolean _shouldGoHomeWhenOutCity = false;
 	protected Queue<WalkNode> _walkNodes = new LinkedList<>();
 	private WalkNode _currentWalkNode;
 	
@@ -71,10 +73,9 @@ public class SimPlayer extends Player
 		switch(_walkOrFarm)
 		{
 			case "walk":
-				//LOGGER.info(_walkNodes.size());
 				TeleportModule.MoveInCity(this);
-				TeleportModule.TeleportToLocation(this, "Fields of Massacre", true);
-				//TeleportModule.TeleportToLocation(this,105884,109579,-3224, false);
+				//TeleportModule.TeleportToLocation(this, "Fields of Massacre", _shouldGoHomeWhenOutCity);
+				TeleportModule.TeleportToLocation(this,84614,130249,-3592, _shouldGoHomeWhenOutCity);
 				break;
 			case "farm":
 				handleShots();
@@ -88,12 +89,15 @@ public class SimPlayer extends Player
 	
 	public void setWalkOrFarm(String _type) {
 		_walkOrFarm = _type;
+		_walkNodes.clear(); 
 		_currentWalkNode = null;
 		_isWalking = false;
+		_shouldGoHomeWhenOutCity = false;
+		// abort all cast & attack.
+		abortAll(true);
 	}
 	
 	public void walk() {
-		
 		if(_isWalking) {
 			if(userReachedDestination(_currentWalkNode)) {	
 				_currentWalkNode = null;
@@ -103,7 +107,6 @@ public class SimPlayer extends Player
 		
 		if(_walkNodes.isEmpty())
 			return;
-		
 		if(!_isWalking && _currentWalkNode == null) {
 			_currentWalkNode = getWalkNodes().poll();
 			//_walkNodes.add(_currentWalkNode);
@@ -162,7 +165,7 @@ public class SimPlayer extends Player
 	protected void targetRandom()
 	{
 		if(this.getTarget() == null) {
-			List<Creature> targets = this.getKnownTypeInRadius(Monster.class, 800).stream().filter(x->!x.isDead()).collect(Collectors.toList());
+			List<Creature> targets = this.getKnownTypeInRadius(Monster.class, 2000).stream().filter(x->!x.isDead()).collect(Collectors.toList());
 			if(!targets.isEmpty()) {
 				Creature target = targets.get(Rnd.get(0, targets.size() -1 ));
 				this.setTarget(target);				

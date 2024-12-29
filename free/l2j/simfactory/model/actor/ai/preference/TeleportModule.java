@@ -192,13 +192,32 @@ public class TeleportModule {
         
         List<Location> path = GeoEngine.getInstance().findPath(player.getX(), player.getY(), player.getZ(), GK.getX(), GK.getY(), GK.getZ(), true, null);
 		if (path.isEmpty()) {
-			goHome(player, -1, -1, false);
+			//goHome(player, -1, -1, false);
 			return;
 		}
 		
 		for (Location loc : path)
 			addWalkNode(player, loc.getX(), loc.getY(), loc.getZ());
     	
+    }
+    
+    public static void MoveToLocation(SimPlayer player, int x, int y, int z){
+		player.walk(); 
+    	
+        if (player.isWalk()) {
+        	return;
+        }
+        
+    	List<Location> path = GeoEngine.getInstance().findPath(player.getX(), player.getY(), player.getZ(), x, y, z, true, null);
+		if (path.isEmpty()) {
+			//goHome(player, -1, -1, false);
+			return;
+		}
+		
+		for (Location loc : path)
+			addWalkNode(player, loc.getX(), loc.getY(), loc.getZ());
+		// last node precise position
+		addWalkNode(player, x, y, z);
     }
     
     public static void TeleportToLocation(SimPlayer player, String loc, boolean shouldGoHome) {
@@ -230,14 +249,12 @@ public class TeleportModule {
     			break;
     		}
 		}
-    	
     	if (city.equals(TCity.NON_CITY))
-        	return;
-        if (player.isWalk())
         	return;
         
         Npc GK = World.getInstance().getNpc(GateKeepers[city.getValue()]);
-        
+        if (player.isWalk() && Functions.distanceBetween(player.getPosition(), GK.getPosition()) < 250)
+        	return;
         
         final List<TeleportLocation> teleports = TeleportData.getInstance().getTeleports(GK.getNpcId());
 		if (teleports == null)
@@ -261,12 +278,12 @@ public class TeleportModule {
 		}
 		String targetLoc = closestTeleport.getDesc();
 		
-		if (player.getX()==closestTeleport.getX() 
-			&& player.getY()==closestTeleport.getY() 
-			&& player.getZ()==closestTeleport.getZ() )
+		if (Functions.distanceBetween(player.getPosition(), new Location(x,y,z)) < 10000){
+			MoveToLocation(player, x, y, z);
 			return;
+		}
 		
-		TeleportToLocation(player, targetLoc, shouldGoHome);
+		TeleportToLocation(player, targetLoc, true);
     }
     
     public static void TeleportTo(SimPlayer player, String loc) {
