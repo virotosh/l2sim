@@ -5,12 +5,14 @@ import java.util.List;
 
 import net.sf.l2j.commons.logging.CLogger;
 
+import net.sf.l2j.gameserver.data.xml.RestartPointData;
 import net.sf.l2j.gameserver.data.xml.TeleportData;
 import net.sf.l2j.gameserver.geoengine.GeoEngine;
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.Npc;
 import net.sf.l2j.gameserver.model.location.Location;
 import net.sf.l2j.gameserver.model.location.TeleportLocation;
+import net.sf.l2j.gameserver.model.restart.RestartPoint;
 
 import free.l2j.simfactory.model.actor.SimPlayer;
 
@@ -72,6 +74,25 @@ public class TeleportModule {
         "Rune Township",
         "Town of Oren",
         "Hunters Village"
+    };
+    
+    public static final String[] RestartPointNames = {
+        "dwarf_town",
+        "orc_town",
+        "darkelf_town",
+        "elf_town",
+        "talking_island_town",
+        "heiness_town",
+        "dion_castle_town",
+        "giran_castle_town",
+        "aden_town",
+        "godard_town",
+        "gludio_castle_town",
+        "gludin_town",
+        "schuttgard_town",
+        "rune_town",
+        "oren_castle_town",
+        "hunter_town"
     };
 
     // IDs of the Gatekeepers
@@ -136,7 +157,7 @@ public class TeleportModule {
         if (Functions.inRange(player, -83139, 243145, player.getZ(), 5000)) city = TCity.TALKING_ISLAND;
 
         // If it isn't in one of the previous locations then goHome and try again
-        if (city.equals(TCity.NON_CITY) ) {
+        if (city.equals(TCity.NON_CITY) && shouldGoHome) {
             goHome(player, -1, -1, false);
         }
         return city;
@@ -156,8 +177,10 @@ public class TeleportModule {
         TCity city = getCity(player, false, false);
         if (city.equals(TCity.NON_CITY))
         	return;
-        if (!player.getWalkNodes().isEmpty()) {
-        	player.walk(); 
+    	
+        player.walk(); 
+    	
+        if (player.isWalk()) {
         	return;
         }
         
@@ -178,13 +201,17 @@ public class TeleportModule {
     	
     }
     
-    public static void TeleportToLocation(SimPlayer player, String loc) {
-    	TCity city = getCity(player, false, false);
+    public static void TeleportToLocation(SimPlayer player, String loc, boolean shouldGoHome) {
+    	TCity city = getCity(player, shouldGoHome, false);
         
         if (city.equals(TCity.NON_CITY))
         	return;
-		TeleportGraph TGraph = new TeleportGraph();
         
+        if (player.isWalk())
+        	return;
+        
+		TeleportGraph TGraph = new TeleportGraph();
+
 		for (String TNode : TGraph.shortestPath(CityNames[city.getValue()], loc).getFirst()){
 			if (TNode.equals(CityNames[city.getValue()])) continue;
 			TeleportTo(player, TNode);
@@ -192,19 +219,68 @@ public class TeleportModule {
 		}
     }
     
+    public static void TeleportToLocation(SimPlayer player, int x, int y, int z, boolean shouldGoHome) {
+    	final RestartPoint rp = RestartPointData.getInstance().getRestartPoint(new Location(x,y,z));
+    	TCity city = TCity.NON_CITY;
+    	
+    	for (int index = 0; index < RestartPointNames.length; index++)
+		{
+    		if (RestartPointNames[index].equals(rp.getName())) {
+    			city=TCities[index];
+    			break;
+    		}
+		}
+    	
+    	if (city.equals(TCity.NON_CITY))
+        	return;
+        if (player.isWalk())
+        	return;
+        
+        Npc GK = World.getInstance().getNpc(GateKeepers[city.getValue()]);
+        
+        
+        final List<TeleportLocation> teleports = TeleportData.getInstance().getTeleports(GK.getNpcId());
+		if (teleports == null)
+			return;
+		double minDistance = 1000000000;
+		TeleportLocation closestTeleport = null;
+		for (int index = 0; index < teleports.size(); index++)
+		{
+			final TeleportLocation teleport = teleports.get(index);
+			if (teleport == null)
+				continue;
+			double distance = Functions.distanceBetween(x, y, z, teleport.getX(), teleport.getY(), teleport.getZ());
+			if (distance<minDistance) {
+				minDistance=distance;
+				closestTeleport = teleport;
+			}
+		}
+		if (closestTeleport==null) {
+			LOGGER.info("closestTeleport is null");
+			return;
+		}
+		String targetLoc = closestTeleport.getDesc();
+		
+		if (player.getX()==closestTeleport.getX() 
+			&& player.getY()==closestTeleport.getY() 
+			&& player.getZ()==closestTeleport.getZ() )
+			return;
+		
+		TeleportToLocation(player, targetLoc, shouldGoHome);
+    }
+    
     public static void TeleportTo(SimPlayer player, String loc) {
     	TCity city = getCity(player, false, false);
         
         if (city.equals(TCity.NON_CITY))
         	return;
+
+        if (player.isWalk())
+        	return;
         
         Npc GK = World.getInstance().getNpc(GateKeepers[city.getValue()]);
 
         if (Functions.distanceBetween(player.getPosition(), GK.getPosition()) > 250)
-        	return;
-
-        
-        if (!player.getWalkNodes().isEmpty())
         	return;
         
     	final List<TeleportLocation> teleports = TeleportData.getInstance().getTeleports(GK.getNpcId());

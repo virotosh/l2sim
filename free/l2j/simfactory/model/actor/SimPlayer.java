@@ -73,7 +73,8 @@ public class SimPlayer extends Player
 			case "walk":
 				//LOGGER.info(_walkNodes.size());
 				TeleportModule.MoveInCity(this);
-				TeleportModule.TeleportToLocation(this, "Fields of Massacre");
+				TeleportModule.TeleportToLocation(this, "Fields of Massacre", true);
+				//TeleportModule.TeleportToLocation(this,105884,109579,-3224, false);
 				break;
 			case "farm":
 				handleShots();
@@ -92,9 +93,6 @@ public class SimPlayer extends Player
 	}
 	
 	public void walk() {
-		//LOGGER.info(_walkNodes.size());
-		if(_walkNodes.isEmpty()) 
-			return;
 		
 		if(_isWalking) {
 			if(userReachedDestination(_currentWalkNode)) {	
@@ -102,6 +100,9 @@ public class SimPlayer extends Player
 				_isWalking = false;
 			}			
 		}
+		
+		if(_walkNodes.isEmpty())
+			return;
 		
 		if(!_isWalking && _currentWalkNode == null) {
 			_currentWalkNode = getWalkNodes().poll();
@@ -132,6 +133,14 @@ public class SimPlayer extends Player
 	
 	protected void addWalkNode(WalkNode walkNode) {
 		_walkNodes.add(walkNode);
+	}
+	
+	public void setWalk(boolean isWalk) {
+		_isWalking = isWalk;
+	}
+	
+	public boolean isWalk() {
+		return _isWalking;
 	}
 	
 	public void setBusy(boolean isbusy) {
