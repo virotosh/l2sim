@@ -204,9 +204,8 @@ public class TeleportModule {
     public static void MoveToLocation(SimPlayer player, int x, int y, int z){
 		player.walk(); 
     	
-        if (player.isWalk()) {
+        if (player.isWalk())
         	return;
-        }
         
     	List<Location> path = GeoEngine.getInstance().findPath(player.getX(), player.getY(), player.getZ(), x, y, z, true, null);
 		if (path.isEmpty()) {
