@@ -6,6 +6,7 @@ import java.util.List;
 
 import net.sf.l2j.commons.random.Rnd;
 
+import net.sf.l2j.gameserver.data.xml.PlayerLevelData;
 import net.sf.l2j.gameserver.enums.actors.ClassRace;
 import net.sf.l2j.gameserver.enums.actors.Sex;
 import net.sf.l2j.gameserver.model.actor.container.player.Appearance;
@@ -106,6 +107,10 @@ public class SimPlayerHelper{
 			itemIds = Arrays.asList(6379, 6380, 6381, 6382, 858, 858, 889, 889, 920);
 			break;
 		default:
+			if (player.isMageClass())
+				itemIds = Arrays.asList(1101, 1104, 44, 51, 39, 845, 845, 878, 878, 909, 676, 54); // devotion set cat eye earring roral ring diamond neck underwear
+			else
+				itemIds = Arrays.asList(2386, 23, 43, 51, 39, 845, 845, 878, 878, 909, 676, 54); // wooden set cat eye earring roral ring diamond neck underwear
 			break;
 		}
 		//TODO
@@ -171,6 +176,10 @@ public class SimPlayerHelper{
 			itemIds = Arrays.asList(6602);
 			break;
 		default:
+			if (player.isMageClass())
+				itemIds = Arrays.asList(7816); // Apprentice Adventurer's Staff
+			else
+				itemIds = Arrays.asList(7818); // Apprentice Adventurer's Knife
 			break;
 		}
 		// TODO
@@ -184,9 +193,24 @@ public class SimPlayerHelper{
 		}
 	}
 
-	public static SimPlayerAIClass getRandomSimPlayerAIClass() {
-		List<SimPlayerAIClass> classes = SimPlayerAIData.getInstance().getAvailableSimPlayerAIClasses();
-		return classes.get(Rnd.get(0, classes.size() - 1));
+	public static SimPlayerAIClass getRandomSimPlayerAIClass(int playerLevel) {
+		List<SimPlayerAIClass> classids = new ArrayList<>();
+		for(SimPlayerAIClass playerClass: SimPlayerAIData.getInstance().getAvailableSimPlayerAIClasses()) {
+			if(playerLevel < 20)
+				if (playerClass.getClassID().getLevel()==0)
+					classids.add(playerClass);
+			if(playerLevel >= 20 && playerLevel < 40)
+				if (playerClass.getClassID().getLevel()==1)
+					classids.add(playerClass);
+			if(playerLevel >= 40 && playerLevel < 76)
+				if (playerClass.getClassID().getLevel()==2)
+					classids.add(playerClass);
+			if(playerLevel >= 76)
+				if (playerClass.getClassID().getLevel()==3)
+					classids.add(playerClass);
+		}
+			
+		return classids.get(Rnd.get(0, classids.size() - 1));
 	}
 
 
@@ -203,7 +227,7 @@ public class SimPlayerHelper{
 	public static void setLevel(SimPlayer player, int level) {
 		if (level >= 1 && level <= 81) {
 			long pXp = player.getStatus().getExp();
-			long tXp = 6299994999L;
+			long tXp = PlayerLevelData.getInstance().getPlayerLevel(level).requiredExpToLevelUp();
 
 			if (pXp > tXp)
 				player.removeExpAndSp(pXp - tXp, 0);

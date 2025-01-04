@@ -6,6 +6,7 @@ public abstract class SimSkill {
 	
 	public SimSkill(int skillId, int priority) {
 		_skillId = skillId;
+		_priority = priority;
 	}
 
 	public SimSkill(int skillId) {

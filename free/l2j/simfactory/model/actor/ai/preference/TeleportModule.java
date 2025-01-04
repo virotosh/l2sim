@@ -1,7 +1,8 @@
 package free.l2j.simfactory.model.actor.ai.preference;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import net.sf.l2j.commons.logging.CLogger;
 
@@ -115,29 +116,10 @@ public class TeleportModule {
         30233
     };
 
-    public static final int TPDelay = 10 * 1000; // Time to wait after teleporting, change according to your computer
-
-    public static final List < String > GateKeepersStrings = Arrays.asList(
-        "gludio,schuttgart,\"dark elf village\",\"talking island\",\"elf village\",\"orc village\",\"mithril mines\",\"abandoned coal mines\",\"eastern mining zone\",\"western mining zone\"", //dwarven
-        "gludio,schuttgart,\"dark elf village\",\"dwarven village\",\"talking island\",\"elf village\",\"immortal plateau\",\"immortal plateau south\",\"fozen waterfall\"", //orc
-        "gludio,\"dwarven village\",\"talking island\",\"orc village\",\"dark forest\",\"swampland\",\"spider nest\",\"neutral zone\"", //darkelven
-        "gludio,\"dwarven village\",\"talking island\",\"orc village\",\"elven forest\",\"elven fortress\",\"neutral zone\"", //elven
-        "gludin,\"dark elf village\",\"dwarven village\",\"elf village\",\"orc village\",\"elven ruins\",\"singing waterfall\",\"northen territory\",\"obelisk of victory\"", //talking island
-        "giran,oren,dion,aden,goddard,rune,schuttgart,gludio,\"giran harbor\",\"field of silence\",\"field of whispers\",\"alligator island\",\"garden of eva\"", //heine
-        "giran,heine,gludio,goddard,rune,schuttgart,aden,oren,\"cruma marshland\",\"cruma tower\",\"fortress of resistance\",\"plains of dion\",\"bee hive\",\"tanor canyon\"", //dion
-        "oren,heine,dion,goddard,rune,schuttgart,gludio,aden,\"giran harbor\",\"hardins private academy\",\"dragon valley\",\"antharas lair\",\"devils isle\",\"breka stronghold\"", //giran
-        "goddard,oren,giran,heine,schuttgart,dion,gludio,rune,\"hunter village\",\"coliseum\",\"forsaken plains\",\"seal of shilen\",\"forest of mirrors\",\"blazing swamp\",\"field of massacre\",\"ancient battleground\",\"silent valley\",\"tower of insolence\"", //aden
-        "gludio,giran,dion,rune,heine,schuttgart,aden,oren,\"varka\",\"ketra\",\"hot springs\",\"wall of argos\",\"monastery of silence\"", //goddard
-        "schuttgart,heine,aden,oren,dion,goddard,giran,rune,gludin,\"elf village\",\"dark elf village\",\"dwarven village\",\"orc village\",\"ruins of agony\",\"ruins of despair\",\"ant nest\",\"windawood manor\"", //gludio
-        "gludio,\"talking island\",\"elf village\",\"dark elf village\",\"dwarven village\",\"orc village\",\"langk lizardman dwellings\",\"windmill hill\",\"fellmere harvesting grounds\",\"forgotten temple\",\"orc barracks\",\"windy hill\",wasteland,\"red rock ridge\"", //gludin
-        "rune,goddard,aden,oren,heine,giran,dion,gludio,\"orc village\",\"dwarven village\",\"den of evil\",\"plunderous plains\",\"frozen labyrinth\",\"crypts of disgrace\",\"pavel ruines\"", //schuttgart
-        "goddard,gludio,giran,dion,heine,schuttgart,aden,oren,\"wild beast pastues\",\"valley of saints\",\"forest of the dead\",\"swamp of screams\",\"monasterty of silence\"", //rune
-        "aden,giran,rune,goddard,heine,dion,schuttgart,gludio,\"ivory tower\",\"hunter village\",\"hardins private academy\",\"skyshadow mead\""
-    );
-
     public static TCity getCity(SimPlayer player, boolean shouldGoHome, boolean inCityEvt) {
         TCity city = TCity.NON_CITY;
-
+        
+        // rough estimate areas for cities
         if (Functions.inRange(player, 147509, 25928, player.getZ(), 5000)) city = TCity.ADEN;
         if (Functions.inRange(player, 11416, 16856, player.getZ(), 5000)) city = TCity.DARK_ELVEN;
         if (Functions.inRange(player, 18591, 144708, player.getZ(), 5000)) city = TCity.DION;
@@ -165,7 +147,9 @@ public class TeleportModule {
 
     public static void goHome(SimPlayer player, int itemID, int skillID, boolean move) {
     	player.resetWalk();
+    	// TODO bugs while escape, player do not see another player teleporting effect
     	player.getAI().tryToCast(player, 2100, 1);
+    	// TODO consuming item does not work for simplayer
     	//player.getAI().tryToUseItem(SCROLL_OF_ESCAPE);
     }
 
@@ -203,7 +187,6 @@ public class TeleportModule {
     
     public static void MoveToLocation(SimPlayer player, int x, int y, int z){
 		player.walk(); 
-    	
         if (player.isWalk())
         	return;
         
@@ -215,7 +198,7 @@ public class TeleportModule {
 		
 		for (Location loc : path)
 			addWalkNode(player, loc.getX(), loc.getY(), loc.getZ());
-		// last node precise position
+		// last node precise position x, y , z as path find generate approximate end node closest to the target loc
 		addWalkNode(player, x, y, z);
     }
     
@@ -229,7 +212,6 @@ public class TeleportModule {
         	return;
         
 		TeleportGraph TGraph = new TeleportGraph();
-
 		for (String TNode : TGraph.shortestPath(CityNames[city.getValue()], loc).getFirst()){
 			if (TNode.equals(CityNames[city.getValue()])) continue;
 			TeleportTo(player, TNode);
@@ -252,13 +234,14 @@ public class TeleportModule {
         	return;
         
         Npc GK = World.getInstance().getNpc(GateKeepers[city.getValue()]);
+        // make sure simplayer reached loc close to gatekeeper before activate city selection for teleport
         if (player.isWalk() && Functions.distanceBetween(player.getPosition(), GK.getPosition()) < 250)
         	return;
         
         final List<TeleportLocation> teleports = TeleportData.getInstance().getTeleports(GK.getNpcId());
 		if (teleports == null)
 			return;
-		double minDistance = 1000000000;
+		List<TeleportNode> teleNodes = new ArrayList<>();
 		TeleportLocation closestTeleport = null;
 		for (int index = 0; index < teleports.size(); index++)
 		{
@@ -266,18 +249,20 @@ public class TeleportModule {
 			if (teleport == null)
 				continue;
 			double distance = Functions.distanceBetween(x, y, z, teleport.getX(), teleport.getY(), teleport.getZ());
-			if (distance<minDistance) {
-				minDistance=distance;
-				closestTeleport = teleport;
+			if (teleport.getZ()> -4000) {
+				teleNodes.add(new TeleportNode(teleport,distance));
 			}
 		}
-		if (closestTeleport==null) {
+		if (teleNodes.isEmpty()) {
 			LOGGER.info("closestTeleport is null");
 			return;
 		}
+		closestTeleport = ((teleNodes.stream().sorted((o1, o2)-> Double.compare(o1.getDistance(), o2.getDistance())).collect(Collectors.toList())).get(0)).getLocation();
+		
 		String targetLoc = closestTeleport.getDesc();
 		
-		if (Functions.distanceBetween(player.getPosition(), new Location(x,y,z)) < 10000){
+		// closed distance dictates just walking but not teleport
+		if (Functions.distanceBetween(player.getPosition(), new Location(x,y,z)) < 8000){
 			MoveToLocation(player, x, y, z);
 			return;
 		}
