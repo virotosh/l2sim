@@ -148,6 +148,7 @@ public class SimPlayerTaskManager implements Runnable
 				zones.add(new HuntZone(mob,closestTeleNode.getDistance()));
 			}
 			HuntZone closestMob = (zones.stream().sorted((o1, o2)-> Double.compare(o1.getDistance(), o2.getDistance())).collect(Collectors.toList())).get(0);
+			LOGGER.info("{} {} {}",n,closestMob.getDistance(),closestMob.getMonster());
 			_farmMonsters.put(String.valueOf(n), closestMob.getMonster());
 			if (closestMob.getDistance()>=8000 && n>1) // skip too far mobs
 				_farmMonsters.put(String.valueOf(n), _farmMonsters.get(String.valueOf(n-1)));

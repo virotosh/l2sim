@@ -79,7 +79,14 @@ public class SimPlayer extends Player
 		switch(_walkOrFarm)
 		{
 			case "walk":
+				LOGGER.info(this.getName());
+				LOGGER.info(this.getStatus().getLevel());
+				LOGGER.info(this.getClassId());
+				LOGGER.info("{} {}",this.getActiveWeaponItem(),this.getActiveWeaponItem().getCrystalType());
 				Location huntZone = new Location(SimPlayerTaskManager.getInstance()._farmMonsters.get(String.valueOf(this.getStatus().getLevel())).getSpawnLocation()); 
+				LOGGER.info(huntZone);
+				LOGGER.info(SimPlayerTaskManager.getInstance()._farmMonsters.get(String.valueOf(this.getStatus().getLevel())).getName());
+				LOGGER.info(Functions.distanceBetween(this.getX(), this.getY(), this.getZ(),huntZone.getX(),huntZone.getY(),huntZone.getZ()));
 				TeleportModule.MoveInCity(this);
 				TeleportModule.TeleportToLocation(this,huntZone.getX(),huntZone.getY(),huntZone.getZ(), _shouldGoHomeWhenOutCity);
 				// farm when reach hungting zone
