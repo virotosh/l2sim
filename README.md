@@ -24,7 +24,7 @@ Create a random sim
 
 Change sim to walk mode
 - select sim 
-- //sidewalk
+- //simwalk
 
 
 https://github.com/user-attachments/assets/a9003216-d5cc-412a-9d58-039b1c12ea55
