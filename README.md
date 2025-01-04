@@ -2,9 +2,16 @@
 - Behave like human player
 - auto path find and teleport using Djikstra's algorithm, e.g., like google maps
 - auto farm/train
+- auto pick items
 - auto move to hunt zones
 - auto learn new skills
 - auto class change
+
+
+
+https://github.com/user-attachments/assets/766cee71-f423-48e0-b26f-567337495cb0
+
+
 
 # Source
 - aCis 409
