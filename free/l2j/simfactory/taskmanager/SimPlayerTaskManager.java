@@ -226,6 +226,7 @@ public class SimPlayerTaskManager implements Runnable
 		
 		simPlayer.setClient(new SimGameClient(simPlayer));
 		
+		// spawn in cities according races
 		int npcId = 30006; // HUMAN
 		if(_simClass.getClassID().getRace().equals(ClassRace.ELF) )
 			npcId = 30146;

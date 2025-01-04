@@ -162,7 +162,6 @@ public class SimPlayer extends Player
 			return;
 		if(!_isWalking && _currentWalkNode == null) {
 			_currentWalkNode = getWalkNodes().poll();
-			//_walkNodes.add(_currentWalkNode);
 			this.getAI().tryToMoveTo(new Location(_currentWalkNode.getX(), _currentWalkNode.getY(), _currentWalkNode.getZ()), null);
 			_isWalking = true;
 		}

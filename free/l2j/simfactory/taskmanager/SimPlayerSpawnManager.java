@@ -11,22 +11,21 @@ public class SimPlayerSpawnManager implements Runnable
 	protected SimPlayerSpawnManager()
 	{
 		SimPlayer simPlayer = SimPlayerTaskManager.getInstance().spawnRandomSimPlayer();
-		simPlayer.getAI().tryToCast(simPlayer, 2100, 1);
 		simPlayer.setWalkOrFarm("walk");
 		LOGGER.info("Spawned {} sim players", SimPlayerTaskManager.getInstance().getSimPlayersCount());
 		// refresh activities every 10 minutes
 		ThreadPool.scheduleAtFixedRate(this, 1000*60*10, 1000*60*10);
 	}
-	
-	/* (non-Javadoc)
-	 * @see java.lang.Runnable#run()
-	 */
+
 	@Override
 	public void run()
 	{
 		// Loop all Sims.
 		try {
-			SimPlayerTaskManager.getInstance().getSimPlayers().forEach(x-> x.setWalkOrFarm("walk"));
+			SimPlayerTaskManager.getInstance().getSimPlayers().forEach(x-> {
+				x.getAI().tryToCast(x, 2100, 1);
+				x.setWalkOrFarm("walk");
+			});
 		}catch(Exception ex) {
 			ex.printStackTrace();
 		}
