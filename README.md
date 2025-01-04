@@ -21,7 +21,7 @@ https://github.com/user-attachments/assets/766cee71-f423-48e0-b26f-567337495cb0
 
 # Usage
 - one bot auto spawn and train from level 1 to 80
-- Make sure acccessLevel 7
+- Make sure acccessLevel 7 to control sims
 
 Sim dashboard
 - //sims
