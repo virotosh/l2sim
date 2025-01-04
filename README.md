@@ -1,14 +1,20 @@
-# l2 server uses bot simulates player
-Code adapts aCis 409
-Try to have clean code and follow aCis style and structure.
-
-use patch file for aCis
+# l2 server has bots simulate players
+- Behave like human player
+- auto path find and teleport using Djikstra's algorithm, e.g., like google maps
+- auto farm/train
+- auto move to hunt zones
+- auto learn new skills
+- auto class change
 
 # Source
-aCis 409
+- aCis 409
+- Code works with aCis 409
+- Clean code and follow aCis style and structure.
+- use patch file for aCis
 
 # Usage
-Make sure set acccessLevel 7 to the account
+- one bot auto spawn and train from level 1 to 80
+- Make sure acccessLevel 7
 
 Sim dashboard
 - //sims
