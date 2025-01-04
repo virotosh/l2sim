@@ -11,6 +11,7 @@ public class SimPlayerSpawnManager implements Runnable
 	protected SimPlayerSpawnManager()
 	{
 		SimPlayer simPlayer = SimPlayerTaskManager.getInstance().spawnRandomSimPlayer();
+		simPlayer.getAI().tryToCast(simPlayer, 2100, 1);
 		simPlayer.setWalkOrFarm("walk");
 		LOGGER.info("Spawned {} sim players", SimPlayerTaskManager.getInstance().getSimPlayersCount());
 		// refresh activities every 10 minutes

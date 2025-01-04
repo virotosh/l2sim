@@ -249,7 +249,7 @@ public class TeleportModule {
 			if (teleport == null)
 				continue;
 			double distance = Functions.distanceBetween(x, y, z, teleport.getX(), teleport.getY(), teleport.getZ());
-			if (teleport.getZ()> -4000) {
+			if (teleport.getZ()> -4000 && teleport.getZ()< -1000) {
 				teleNodes.add(new TeleportNode(teleport,distance));
 			}
 		}

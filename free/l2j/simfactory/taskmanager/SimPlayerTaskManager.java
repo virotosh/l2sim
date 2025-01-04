@@ -104,10 +104,10 @@ public class SimPlayerTaskManager implements Runnable
 			
 			List<HuntZone> zones = new ArrayList<>();
 			for (Npc mob: mobList) {
-				if (!(mob instanceof Monster) ||
+				if (!(mob instanceof Monster) || mob.isInWater() ||
 					mob.isRaidBoss() || mob.isRaidRelated() || 
 					mob.hasMaster() || mob.getExpReward()==0 || 
-					mob.getZ()< -4000 || mob.isInWater()) // skip underground mobs
+					(mob.getZ()< -4000 && mob.getZ()> -1000 ) ) // skip underground mobs
 					continue;
 				
 				final RestartPoint rp = RestartPointData.getInstance().getRestartPoint(mob.getSpawnLocation());
@@ -138,7 +138,7 @@ public class SimPlayerTaskManager implements Runnable
 						continue;
 					double distance = Functions.distanceBetween(mob.getSpawnLocation().getX(), mob.getSpawnLocation().getY(), mob.getSpawnLocation().getZ(),
 																				teleport.getX(), teleport.getY(), teleport.getZ());
-					if (teleport.getZ()> -4000) {
+					if (teleport.getZ()> -4000 && teleport.getZ()< -1000) {
 						teleNodes.add(new TeleportNode(teleport,distance));
 					}
 				}
