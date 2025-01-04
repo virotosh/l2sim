@@ -1,6 +1,6 @@
 # l2 server has bots simulate players
 - Behave like human player
-- auto move use Djikstra's algorithm, e.g., path find similar street map navigation
+- auto teleport/move use Djikstra's algorithm, e.g., path find similar street map navigation
 - auto farm/train
 - auto pick items
 - auto move to hunt zones
